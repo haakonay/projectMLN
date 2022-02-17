@@ -1,0 +1,78 @@
+global {
+	project project
+}
+
+superclass common {
+	openstack {
+		user_data {
+		wget http://apt.puppetlabs.com/puppet6-release-focal.deb
+		dpkg -i puppet6-release-focal.deb
+		apt-get update
+		apt-get -y install puppet-agent
+		apt-get install -y puppet augeas-tools
+		echo "10.0.61.186 master.openstacklocal master" >> /etc/hosts
+		echo "[agent]" >> /etc/puppetlabs/puppet/puppet.conf
+		echo "server = master.openstacklocal" >> /etc/puppetlabs/puppet/puppet.conf
+		echo "runinterval = 1m" >> /etc/puppetlabs/puppet/puppet.conf
+		puppet agent --enable
+		service puppet stop
+		service puppet start
+		}
+
+		image Ubuntu-20.04-LTS
+		flavor m1.small
+		keypair master
+	}
+	network eth0 {
+		net netsys_net
+		address dhcp
+	}
+}
+
+host storage {
+	superclass common
+}
+host database {
+	superclass common
+}
+
+host virtualDesktop1 {
+	superclass common
+	openstack {
+		userdata {
+		adduser --disabled-password --gecos "" --shell /bin/bash john
+                usermod -g sudo john
+                passwd -d john
+		}
+	}
+}
+host virtualDesktop2 {
+	superclass common
+	openstack {
+                userdata {
+                adduser --disabled-password --gecos "" --shell /bin/bash alice
+                usermod -g sudo alice
+                passwd -d alice
+                }
+        } 
+}
+host virtualDesktop3 {
+        superclass common
+	openstack {
+                userdata {
+                adduser --disabled-password --gecos "" --shell /bin/bash bob
+                usermod -g sudo bob
+                passwd -d bob
+                }
+        }
+}
+host virtualDesktop4 {
+        superclass common
+	openstack {
+                userdata {
+                adduser --disabled-password --gecos "" --shell /bin/bash kate
+                usermod -g sudo kate
+                passwd -d kate
+                }
+        }
+}
